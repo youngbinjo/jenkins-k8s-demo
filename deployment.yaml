@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-echo
+  namespace: default
+spec:
+  replicas: 1                 # 파드 개수 (지금은 1개면 충분)
+  selector:
+    matchLabels:
+      app: demo-echo
+  template:
+    metadata:
+      labels:
+        app: demo-echo
+    spec:
+      containers:
+      - name: echo
+        image: hashicorp/http-echo:0.2.3
+        args:
+          - "-text=hello from jenkins pipeline"
+        ports:
+          - containerPort: 5678
+
