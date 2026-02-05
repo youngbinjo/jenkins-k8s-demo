@@ -42,6 +42,7 @@ spec:
             kubectl apply -f deployment.yaml
             kubectl apply -f service.yaml
             kubectl rollout status deploy/demo-echo --timeout=120s
+	    kubectl get deploy,svc,pods -n default | head
           '''
         }
       }
