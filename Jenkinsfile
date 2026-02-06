@@ -37,12 +37,16 @@ spec:
         container('kubectl') {
           sh '''
             set -eux
-            which sh
-            kubectl version --client=true
-            kubectl apply -f deployment.yaml
-            kubectl apply -f service.yaml
-            kubectl rollout status deploy/demo-echo --timeout=120s
-	    kubectl get deploy,svc,pods -n default | head
+	    pwd 
+	    ls -al
+
+	    test -f deployment.yaml
+	    test -f service.yaml
+
+	    kubectl apply -n default -f deployment.yaml
+	    kubectl apply -n default -f service.yaml
+    	    kubectl rollout status -n default deployment/demo-echo --timeout=120s
+	    kubectl get -n default deploy,svc,pods | head
           '''
         }
       }
