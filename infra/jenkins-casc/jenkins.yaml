@@ -1,0 +1,37 @@
+jenkins:
+  systemMessage: "Jenkins configured automatically via JCasC (GitOps-style)"
+  numExecutors: 0
+
+unclassified:
+  location:
+    url: "http://jenkins.jenkins.svc.cluster.local:8080/"
+
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - usernamePassword:
+              scope: GLOBAL
+              id: "github-pat"
+              username: "youngbinjo"
+              password: "${GITHUB_TOKEN}"
+              description: "GitHub PAT for repo access"
+
+jobs:
+  - script: >
+      pipelineJob('k8s-deploy-pipeline') {
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote {
+                  url('https://github.com/youngbinjo/jenkins-k8s-demo.git')
+                  credentials('github-pat')
+                }
+                branches('*/main')
+              }
+            }
+            scriptPath('Jenkinsfile')
+          }
+        }
+      }

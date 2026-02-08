@@ -1,0 +1,23 @@
+controller:
+  installPlugins:
+    - kubernetes
+    - workflow-aggregator
+    - git
+    - configuration-as-code
+    - job-dsl
+
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "512Mi"
+    limits:
+      cpu: "1000m"
+      memory: "1200Mi"
+
+  # JCasC 디렉터리 경로 (ConfigMap으로 마운트할 예정)
+  extraEnvVars:
+    - name: CASC_JENKINS_CONFIG
+      value: /var/jenkins_home/casc_configs
+
+persistence:
+  enabled: false
