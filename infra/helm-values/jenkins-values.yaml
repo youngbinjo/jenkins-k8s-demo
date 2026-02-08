@@ -6,6 +6,25 @@ controller:
     - configuration-as-code
     - job-dsl
 
+  extraEnvVars:
+    - name: CASC_JENKINS_CONFIG
+      value: /var/jenkins_home/casc_configs
+    - name: GITHUB_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: github-token
+          key: GITHUB_TOKEN
+
+  additionalVolumes:
+    - name: jenkins-casc
+      configMap:
+        name: jenkins-casc
+
+  additionalVolumeMounts:
+    - name: jenkins-casc
+      mountPath: /var/jenkins_home/casc_configs
+      readOnly: true
+
   resources:
     requests:
       cpu: "200m"
@@ -14,10 +33,6 @@ controller:
       cpu: "1000m"
       memory: "1200Mi"
 
-  # JCasC 디렉터리 경로 (ConfigMap으로 마운트할 예정)
-  extraEnvVars:
-    - name: CASC_JENKINS_CONFIG
-      value: /var/jenkins_home/casc_configs
-
 persistence:
   enabled: false
+
