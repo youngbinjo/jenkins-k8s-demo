@@ -17,7 +17,7 @@ spec:
       - name: echo
         image: hashicorp/http-echo:0.2.3
         args:
-          - "-text=hello from jenkins pipeline v2"
+          - "-text=hello from final pipeline"
         ports:
           - containerPort: 5678
 
