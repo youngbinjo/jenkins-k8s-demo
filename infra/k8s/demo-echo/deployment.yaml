@@ -4,7 +4,7 @@ metadata:
   name: demo-echo
   namespace: default
 spec:
-  replicas: 1                 # 파드 개수 (지금은 1개면 충분)
+  replicas: 2                # 파드 개수 (지금은 1개면 충분)
   selector:
     matchLabels:
       app: demo-echo
