@@ -1,156 +1,66 @@
-📦 Jenkins + Kubernetes 기반 CI/CD 파이프라인 구축
-프로젝트 개요
+# 🚀 AWS & K8s 기반 비용 최적화 CI/CD 및 모니터링 구축
 
-GitHub에 코드를 push하면 Jenkins 파이프라인이 자동으로 실행되고,
-Kubernetes 클러스터에 애플리케이션이 자동 배포되는
-CI/CD 환경을 직접 구축한 프로젝트이다.
+> **AWS Spot Instance**와 **K3s**를 활용하여 최소 비용으로 구축한 기업급 인프라 자동화 및 관측성(Observability) 프로젝트입니다.
 
-아키텍처 구성
-GitHub
-  ↓ (push)
-Jenkins Pipeline
-  ↓
-Kubernetes Agent Pod
-  ↓
-kubectl apply
-  ↓
-Deployment 롤아웃
+---
 
-사용 기술 스택
-영역	기술
-Cloud	AWS EC2
-Container Orchestration	k3s (Kubernetes)
-CI/CD	Jenkins
-SCM	GitHub
-Deployment	kubectl
-IaC (일부)	Terraform (인프라 구성 단계)
-전체 실행 흐름
-1. GitHub 저장소에 코드 push
-git add .
-git commit -m "update deployment"
-git push
-
-2. Jenkins 파이프라인 자동 실행
-
-Jenkins가 GitHub 저장소를 감지하여 파이프라인 실행
-
-3. Kubernetes Agent Pod 생성
-
-Jenkins가 Kubernetes에 임시 에이전트 Pod 생성
-
-k8s-deploy-pipeline-xxxxx
-
-4. 애플리케이션 배포
-
-Pipeline 내부에서 실행:
-
-kubectl apply -f deployment.yaml
-kubectl apply -f service.yaml
-kubectl rollout status deploy/demo-echo
-
-5. 배포 결과 확인
-kubectl get pods
+## 🏗 아키텍처 (Architecture)
 
 
-출력 예시:
 
-demo-echo-xxxxx   1/1   Running
+* **Infrastructure**: Terraform → AWS EC2 (Spot) → K3s
+* **CI/CD**: GitHub → Webhook → Jenkins Pipeline → K8s Deployment
+* **Observability**: K8s Metrics → Prometheus → Grafana → Slack Alert
 
-Jenkinsfile (핵심 파이프라인)
-pipeline {
-  agent {
-    kubernetes {
-      yaml """
-apiVersion: v1
-kind: Pod
-spec:
-  serviceAccountName: jenkins-sa
-  containers:
-  - name: kubectl
-    image: bitnami/kubectl:1.30
-    command:
-    - cat
-    tty: true
-"""
-    }
-  }
+---
 
-  stages {
-    stage('Deploy to Kubernetes') {
-      steps {
-        container('kubectl') {
-          sh '''
-            set -eux
-            kubectl apply -f deployment.yaml
-            kubectl apply -f service.yaml
-            kubectl rollout status deploy/demo-echo --timeout=120s
-          '''
-        }
-      }
-    }
-  }
-}
+## 🛠 기술 스택 (Tech Stack)
 
-트러블슈팅 요약
-1. Jenkins에서 kubectl 명령어 실행 실패
+| 구분 | 기술 | 상세 내용 |
+| :--- | :--- | :--- |
+| **Cloud** | **AWS** | EC2 Spot Instance, VPC, Security Group |
+| **IaC** | **Terraform** | 인프라 프로비저닝 자동화 |
+| **Orchestration** | **K3s** | 경량화 Kubernetes 클러스터 운영 |
+| **CI/CD** | **Jenkins** | Docker 기반 Pipeline 배포 자동화 |
+| **Monitoring** | **Prometheus** | 시계열 메트릭 데이터 수집 |
+| **Visualization** | **Grafana** | 실시간 데이터 시각화 및 알림 설정 |
+| **Notification** | **Slack** | Incoming Webhooks 기반 장애 전파 |
 
-에러
+---
 
-kubectl: not found
+## 🌟 핵심 구현 내용
 
+### 1️⃣ 인프라 자동화 및 비용 최적화
+* **비용 절감**: AWS 스팟 인스턴스 도입으로 인프라 운영 비용 약 **70% 절감**.
+* **복구 탄력성**: 인스턴스 회수 시 **Terraform**과 **User_data**를 통해 5분 이내 자동 복구 체계 구축.
 
-원인
+### 2️⃣ 관측성(Observability) 및 알림 체계
+* **실시간 모니터링**: Prometheus를 데이터 소스로 하여 클러스터 리소스 상태 시각화.
+* **장애 대응**: 가용 메모리 **10% 미만** 도달 시 즉시 **Slack 알림** 발송 규칙(Alert Rule) 적용.
 
-Jenkins 에이전트 컨테이너에 kubectl 미설치
+### 3️⃣ 리소스 최적화 (Troubleshooting)
+* **OOM 문제 해결**: Jenkins의 과도한 자원 점유를 발견하고 **JVM Heap Size(`-Xmx2048m`)** 제한을 통해 시스템 안정성 확보.
 
-해결
+---
 
-kubectl 이미지 기반 Kubernetes agent 사용
+## 🔍 주요 트러블슈팅 경험
 
-2. Kubernetes API 접근 권한 오류
+### ✅ 문제 1: 스팟 인스턴스 재시작 후 접속 불가 (503/404 Error)
+* **원인**: 인프라 재구성 시 Ingress의 백엔드 서비스 포트 매칭 오류 발생.
+* **해결**: `kubectl` 엔드포인트 검증 후 Ingress 설정을 실제 서비스 포트(9090)로 수정하여 정상화.
 
-에러
+### ✅ 문제 2: Jenkins 파이프라인 권한 및 실행 오류
+* **원인**: Jenkins ServiceAccount의 권한 부족 및 에이전트 내 `kubectl` 미설치.
+* **해결**: **RoleBinding** 설정 및 **Kubernetes Pod Agent**를 활용한 컨테이너 기반 빌드 환경 구축.
 
-User "system:serviceaccount:jenkins:jenkins-sa" cannot get resource
+---
 
+## 📈 향후 개선 계획
+- [ ] **Loki** 기반의 로그 통합 관리 시스템 구축
+- [ ] **ArgoCD** 도입을 통한 GitOps 배포 프로세스 전환
+- [ ] **Cert-Manager**를 활용한 HTTPS 보안 강화
 
-원인
+---
 
-Jenkins ServiceAccount 권한 부족
-
-해결
-
-RoleBinding 추가
-
-3. Ingress 404 및 NodePort 연결 실패
-
-원인
-
-iptables 규칙 및 포트 포워딩 충돌
-
-해결
-
-NodePort 및 NAT 규칙 재구성
-
-nginx 리버스 프록시 구성
-
-프로젝트 결과
-구축 완료 항목
-
-k3s 기반 Kubernetes 클러스터 구축
-
-Jenkins 설치 및 Kubernetes 연동
-
-GitHub → Jenkins → Kubernetes 자동 배포
-
-Kubernetes Agent 기반 파이프라인 구성
-
-향후 개선 계획
-
-Prometheus + Grafana 모니터링 추가
-
-Terraform 기반 전체 인프라 코드화
-
-Jenkins를 Ingress로 외부 노출
-# webhook test 2026-02-13T05:02:52+00:00
-# webhook test after restart 2026-02-13T06:21:44+00:00
+## 💡 한 줄 소감
+> "제한된 자원 내에서 최적의 성능을 끌어내기 위한 리소스 튜닝과 장애 대응 프로세스의 중요성을 경험한 프로젝트입니다."
