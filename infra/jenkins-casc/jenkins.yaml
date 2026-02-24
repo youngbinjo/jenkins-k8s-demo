@@ -2,9 +2,24 @@ jenkins:
   systemMessage: "Jenkins configured automatically via JCasC (GitOps-style)"
   numExecutors: 0
 
+  # 1. 관리자 계정 정의 (Terraform/Secret에서 주입된 비밀번호 사용)
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+       - id: "admin"
+         # jenkins-values.yaml에서 매핑한 환경변수명을 정확히 기입합니다.
+         password: "${JENKINS_ADMIN_PASSWORD}"
+
+  # 2. 권한 전략 설정 (로그인한 사용자에게 모든 권한 부여)
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+
 unclassified:
   location:
-    url: "http://jenkins.jenkins.svc.cluster.local:8080/"
+    # 사용자님의 도메인으로 설정하여 일관성을 유지합니다.
+    url: "http://jenkins.ybtest.pics/"
 
 credentials:
   system:
