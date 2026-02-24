@@ -14,6 +14,12 @@ controller:
         secretKeyRef:
           name: github-token
           key: GITHUB_TOKEN
+    # [추가] 테라폼->user_data.sh를 통해 생성된 시크릿을 환경변수로 매핑
+    - name: JENKINS_ADMIN_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: jenkins-admin-pw
+          key: password
 
   additionalVolumes:
     - name: jenkins-casc
@@ -35,4 +41,3 @@ controller:
 
 persistence:
   enabled: false
-
