@@ -1,4 +1,7 @@
 controller:
+  # [추가] 칭화대 미러 대신 공식 업데이트 센터를 사용하도록 강제 지정
+  updateCenter: "https://updates.jenkins.io/update-center.json"
+  
   installPlugins:
     - kubernetes
     - workflow-aggregator
@@ -14,7 +17,6 @@ controller:
         secretKeyRef:
           name: github-token
           key: GITHUB_TOKEN
-    # [추가] 테라폼->user_data.sh를 통해 생성된 시크릿을 환경변수로 매핑
     - name: JENKINS_ADMIN_PASSWORD
       valueFrom:
         secretKeyRef:
