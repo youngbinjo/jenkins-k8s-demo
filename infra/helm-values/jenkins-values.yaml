@@ -1,28 +1,36 @@
 controller:
-  # [추가] 칭화대 미러 대신 공식 업데이트 센터를 사용하도록 강제 지정
+  # [추가] 공식 업데이트 센터 사용 (미러 사이트 이슈 방지)
   updateCenter: "https://updates.jenkins.io/update-center.json"
   
+  # [핵심 추가] Job DSL이 생성한 스크립트를 관리자 승인 없이 자동 실행하도록 설정
+  JCasC:
+    defaultConfig: false
+    security:
+      shouldBeEnable: false 
+
   installPlugins:
     - kubernetes
     - workflow-aggregator
     - git
     - configuration-as-code
-    - job-dsl
+    - job-dsl  # 파이프라인 자동 생성을 위한 필수 플러그인
 
-  extraEnvVars:
-    - name: CASC_JENKINS_CONFIG
-      value: /var/jenkins_home/casc_configs
-    - name: GITHUB_TOKEN
-      valueFrom:
-        secretKeyRef:
-          name: github-token
-          key: GITHUB_TOKEN
+  # [수정] 젠킨스 관리자 암호 및 토큰을 환경변수로 매핑
+  containerEnv:
     - name: JENKINS_ADMIN_PASSWORD
       valueFrom:
         secretKeyRef:
           name: jenkins-admin-pw
           key: password
+    - name: GITHUB_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: github-token
+          key: GITHUB_TOKEN
+    - name: CASC_JENKINS_CONFIG
+      value: "/var/jenkins_home/casc_configs/jenkins.yaml"
 
+  # [유지] ConfigMap을 통한 설정 파일 마운트
   additionalVolumes:
     - name: jenkins-casc
       configMap:
@@ -33,13 +41,15 @@ controller:
       mountPath: /var/jenkins_home/casc_configs
       readOnly: true
 
+  # [최적화] JVM 메모리 옵션 추가 및 리소스 할당
+  javaOpts: "-Xmx1024m -Duser.timezone=Asia/Seoul"
   resources:
     requests:
-      cpu: "200m"
-      memory: "512Mi"
+      cpu: "500m"
+      memory: "1024Mi"
     limits:
       cpu: "1000m"
-      memory: "1200Mi"
+      memory: "2048Mi"
 
 persistence:
-  enabled: false
+  enabled: false # 테스트 환경이므로 볼륨 유지 안 함
