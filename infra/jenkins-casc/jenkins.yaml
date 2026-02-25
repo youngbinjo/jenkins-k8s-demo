@@ -1,24 +1,22 @@
 jenkins:
   systemMessage: "Jenkins configured automatically via JCasC (GitOps-style)"
-  numExecutors: 0
+  numExecutors: 2 # Job을 실행하기 위해 최소 1개 이상의 executor가 필요합니다.
 
-  # 1. 관리자 계정 정의 (Terraform/Secret에서 주입된 비밀번호 사용)
+  # 1. 관리자 계정 정의
   securityRealm:
     local:
       allowsSignup: false
       users:
        - id: "admin"
-         # jenkins-values.yaml에서 매핑한 환경변수명을 정확히 기입합니다.
          password: "${JENKINS_ADMIN_PASSWORD}"
 
-  # 2. 권한 전략 설정 (로그인한 사용자에게 모든 권한 부여)
+  # 2. 권한 전략 설정
   authorizationStrategy:
     loggedInUsersCanDoAnything:
       allowAnonymousRead: false
 
 unclassified:
   location:
-    # 사용자님의 도메인으로 설정하여 일관성을 유지합니다.
     url: "http://jenkins.ybtest.pics/"
 
 credentials:
@@ -27,14 +25,17 @@ credentials:
       - credentials:
           - usernamePassword:
               scope: GLOBAL
-              id: "github-pat"
+              id: "github-pat" # Job DSL에서 참조할 ID
               username: "youngbinjo"
               password: "${GITHUB_TOKEN}"
               description: "GitHub PAT for repo access"
 
+# [핵심] Job DSL을 통한 파이프라인 자동 생성
 jobs:
   - script: >
       pipelineJob('k8s-deploy-pipeline') {
+        description('GitHub 리포지토리(jenkins-k8s-demo)와 동기화된 메인 배포 파이프라인입니다.')
+        keepDependencies(false)
         definition {
           cpsScm {
             scm {
@@ -46,7 +47,8 @@ jobs:
                 branches('*/main')
               }
             }
-            scriptPath('Jenkinsfile')
+            scriptPath('Jenkinsfile') # 리포지토리 루트의 Jenkinsfile 참조
+            lightweight(true)
           }
         }
       }
