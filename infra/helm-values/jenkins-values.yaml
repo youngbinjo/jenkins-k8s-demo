@@ -1,8 +1,8 @@
 controller:
-  # [추가] 공식 업데이트 센터 사용 (미러 사이트 이슈 방지)
+  # [유지] 공식 업데이트 센터 사용
   updateCenter: "https://updates.jenkins.io/update-center.json"
   
-  # [핵심 추가] Job DSL이 생성한 스크립트를 관리자 승인 없이 자동 실행하도록 설정
+  # [유지] Job DSL 자동 실행 설정
   JCasC:
     defaultConfig: false
     security:
@@ -13,9 +13,9 @@ controller:
     - workflow-aggregator
     - git
     - configuration-as-code
-    - job-dsl  # 파이프라인 자동 생성을 위한 필수 플러그인
+    - job-dsl
 
-  # [수정] 젠킨스 관리자 암호 및 토큰을 환경변수로 매핑
+  # [수정] CASC_JENKINS_CONFIG 경로를 커스텀 경로로 변경
   containerEnv:
     - name: JENKINS_ADMIN_PASSWORD
       valueFrom:
@@ -28,20 +28,21 @@ controller:
           name: github-token
           key: GITHUB_TOKEN
     - name: CASC_JENKINS_CONFIG
-      value: "/var/jenkins_home/casc_configs/jenkins.yaml"
+      # 헬름 기본 경로와 겹치지 않게 파일명까지 명시합니다.
+      value: "/var/jenkins_home/custom_configs/jenkins.yaml"
 
-  # [유지] ConfigMap을 통한 설정 파일 마운트
+  # [수정] 볼륨 이름 및 마운트 경로 변경
   additionalVolumes:
-    - name: jenkins-casc
+    - name: jenkins-custom-casc
       configMap:
         name: jenkins-casc
 
   additionalVolumeMounts:
-    - name: jenkins-casc
-      mountPath: /var/jenkins_home/casc_configs
+    - name: jenkins-custom-casc
+      # 마운트 경로를 custom_configs로 변경하여 헬름 기본 파일들과 격리합니다.
+      mountPath: /var/jenkins_home/custom_configs
       readOnly: true
 
-  # [최적화] JVM 메모리 옵션 추가 및 리소스 할당
   javaOpts: "-Xmx1024m -Duser.timezone=Asia/Seoul"
   resources:
     requests:
@@ -52,4 +53,4 @@ controller:
       memory: "2048Mi"
 
 persistence:
-  enabled: false # 테스트 환경이므로 볼륨 유지 안 함
+  enabled: false
