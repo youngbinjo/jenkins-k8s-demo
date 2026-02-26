@@ -15,20 +15,21 @@ jenkins:
     loggedInUsersCanDoAnything:
       allowAnonymousRead: false
 
+  # [수정] credentials 섹션을 jenkins 블록 내부로 이동했습니다.
+  credentials:
+    system:
+      domainCredentials:
+        - credentials:
+            - usernamePassword:
+                scope: GLOBAL
+                id: "github-pat" # Job DSL에서 참조할 ID
+                username: "youngbinjo"
+                password: "${GITHUB_TOKEN}"
+                description: "GitHub PAT for repo access"
+
 unclassified:
   location:
     url: "http://jenkins.ybtest.pics/"
-
-credentials:
-  system:
-    domainCredentials:
-      - credentials:
-          - usernamePassword:
-              scope: GLOBAL
-              id: "github-pat" # Job DSL에서 참조할 ID
-              username: "youngbinjo"
-              password: "${GITHUB_TOKEN}"
-              description: "GitHub PAT for repo access"
 
 # [핵심] Job DSL을 통한 파이프라인 자동 생성
 jobs:
@@ -36,6 +37,12 @@ jobs:
       pipelineJob('k8s-deploy-pipeline') {
         description('GitHub 리포지토리(jenkins-k8s-demo)와 동기화된 메인 배포 파이프라인입니다.')
         keepDependencies(false)
+        
+        # [추가] GitHub 웹훅 트리거 설정 (실무 권장)
+        triggers {
+          githubPush()
+        }
+
         definition {
           cpsScm {
             scm {
