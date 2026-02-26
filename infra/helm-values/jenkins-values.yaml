@@ -6,6 +6,7 @@ controller:
     defaultConfig: false
     security:
       shouldBeEnable: false 
+    configScripts: {}
 
   installPlugins:
     - kubernetes
