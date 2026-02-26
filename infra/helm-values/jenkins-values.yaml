@@ -1,8 +1,9 @@
 controller:
   updateCenter: "https://updates.jenkins.io/update-center.json"
   
+  # JCasC 설정: 기본 설정을 끄고 사이드카를 통한 커스텀 파일만 읽도록 유도
   JCasC:
-    defaultConfig: false  # 기본 보안 설정을 꺼서 사용자 설정과 충돌 방지
+    defaultConfig: false
     security:
       shouldBeEnable: false 
 
@@ -24,10 +25,19 @@ controller:
         secretKeyRef:
           name: github-token
           key: GITHUB_TOKEN
+    # [수정] 메인 컨테이너가 파일 경로를 정확히 하나만 가리키게 합니다.
+    - name: CASC_JENKINS_CONFIG
+      value: "/var/jenkins_home/casc_configs/jenkins.yaml"
 
-  # [핵심] 추가적인 CASC_JENKINS_CONFIG 정의나 볼륨 마운트를 여기서 하지 않습니다.
-  # 모든 것은 Helm 차트의 사이드카 기능과 user_data.sh의 --set 옵션에 맡깁니다.
-  additionalVolumes: []
-  additionalVolumeMounts: []
+  # 사이드카 설정 내역을 values에 포함시켜 --set과의 충돌을 방지합니다.
+  sidecars:
+    configAutoReload:
+      enabled: true
+      label: jenkins-jenkins-config
+      folder: /var/jenkins_home/casc_configs
 
   javaOpts: "-Xmx1024m -Duser.timezone=Asia/Seoul"
+  
+  # [중요] 이전에 충돌을 일으켰던 additionalVolumeMounts는 반드시 비워둡니다.
+  additionalVolumes: []
+  additionalVolumeMounts: []
