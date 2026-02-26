@@ -26,7 +26,8 @@ controller:
         secretKeyRef:
           name: github-token
           key: GITHUB_TOKEN
-
+    - name: CASC_JENKINS_CONFIG
+      value: "/var/jenkins_home/casc_config/jenkins.yaml"
 
   # 사이드카 설정 내역을 values에 포함시켜 --set과의 충돌을 방지합니다.
   sidecars:
