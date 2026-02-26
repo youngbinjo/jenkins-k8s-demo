@@ -15,7 +15,7 @@ controller:
     - configuration-as-code
     - job-dsl
 
-  # [수정] CASC_JENKINS_CONFIG 경로를 커스텀 경로로 변경
+  # [수정] 충돌을 방지하기 위해 CASC_JENKINS_CONFIG 환경 변수 중복 정의 제거
   containerEnv:
     - name: JENKINS_ADMIN_PASSWORD
       valueFrom:
@@ -27,21 +27,10 @@ controller:
         secretKeyRef:
           name: github-token
           key: GITHUB_TOKEN
-    - name: CASC_JENKINS_CONFIG
-      # 헬름 기본 경로와 겹치지 않게 파일명까지 명시합니다.
-      value: "/var/jenkins_home/custom_configs/jenkins.yaml"
 
-  # [수정] 볼륨 이름 및 마운트 경로 변경
-  additionalVolumes:
-    - name: jenkins-custom-casc
-      configMap:
-        name: jenkins-casc
-
-  additionalVolumeMounts:
-    - name: jenkins-custom-casc
-      # 마운트 경로를 custom_configs로 변경하여 헬름 기본 파일들과 격리합니다.
-      mountPath: /var/jenkins_home/custom_configs
-      readOnly: true
+  # [수정] 수동 볼륨 마운트 제거 (Sidecar가 자동으로 처리함)
+  additionalVolumes: []
+  additionalVolumeMounts: []
 
   javaOpts: "-Xmx1024m -Duser.timezone=Asia/Seoul"
   resources:
