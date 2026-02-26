@@ -25,9 +25,7 @@ controller:
         secretKeyRef:
           name: github-token
           key: GITHUB_TOKEN
-    # [수정] 메인 컨테이너가 파일 경로를 정확히 하나만 가리키게 합니다.
-    - name: CASC_JENKINS_CONFIG
-      value: "/var/jenkins_home/casc_configs/jenkins.yaml"
+
 
   # 사이드카 설정 내역을 values에 포함시켜 --set과의 충돌을 방지합니다.
   sidecars:
