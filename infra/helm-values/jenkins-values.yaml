@@ -27,7 +27,7 @@ controller:
           name: github-token
           key: GITHUB_TOKEN
     # [수정] 이름을 다르게 설정하여 Helm 차트의 기본값(디렉토리 경로)이 덮어쓰지 못하게 합니다.
-    - name: CASC_JENKINS_CONFIG_FILE
+    - name: CUSTOM_CASC_CONFIG_FILE
       value: "/var/jenkins_home/casc_configs/jenkins.yaml"
 
   # 사이드카 설정
