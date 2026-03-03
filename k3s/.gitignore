@@ -1,0 +1,13 @@
+# Terraform 관련 민감 파일
+*.tfstate
+*.tfstate.backup
+.terraform/
+.terraform.lock.hcl
+
+# 비밀번호가 담긴 변수 파일 (가장 중요)
+*.tfvars
+terraform.tfvars
+
+# 기타 임시 파일
+*.log
+update-dns.json
