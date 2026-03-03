@@ -1,0 +1,61 @@
+jenkins:
+  systemMessage: "Jenkins configured automatically via JCasC (GitOps-style)"
+  numExecutors: 2 # Job을 실행하기 위해 최소 1개 이상의 executor가 필요합니다.
+
+  # 1. 관리자 계정 정의
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+       - id: "admin"
+         password: "${JENKINS_ADMIN_PASSWORD}"
+
+  # 2. 권한 전략 설정
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+
+  # [수정] credentials 섹션을 jenkins 블록 내부로 이동했습니다.
+  credentials:
+    system:
+      domainCredentials:
+        - credentials:
+            - usernamePassword:
+                scope: GLOBAL
+                id: "github-pat" # Job DSL에서 참조할 ID
+                username: "youngbinjo"
+                password: "${GITHUB_TOKEN}"
+                description: "GitHub PAT for repo access"
+
+unclassified:
+  location:
+    url: "http://jenkins.ybtest.pics/"
+
+# [핵심] Job DSL을 통한 파이프라인 자동 생성
+jobs:
+  - script: >
+      pipelineJob('k8s-deploy-pipeline') {
+        description('GitHub 리포지토리(jenkins-k8s-demo)와 동기화된 메인 배포 파이프라인입니다.')
+        keepDependencies(false)
+        
+        # [추가] GitHub 웹훅 트리거 설정 (실무 권장)
+        triggers {
+          githubPush()
+        }
+
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote {
+                  url('https://github.com/youngbinjo/jenkins-k8s-demo.git')
+                  credentials('github-pat')
+                }
+                branches('*/main')
+              }
+            }
+            scriptPath('Jenkinsfile') # 리포지토리 루트의 Jenkinsfile 참조
+            lightweight(true)
+          }
+        }
+      }

@@ -1,0 +1,47 @@
+controller:
+  updateCenter: "https://updates.jenkins.io/update-center.json"
+  
+  # JCasC 설정: 기본 설정을 끄고 사이드카를 통한 커스텀 파일만 읽도록 유도
+  JCasC:
+    defaultConfig: false
+    security:
+      shouldBeEnable: false 
+    configScripts: {}
+
+  installPlugins:
+    - kubernetes
+    - workflow-aggregator
+    - git
+    - configuration-as-code
+    - job-dsl
+
+  containerEnv:
+    - name: JENKINS_ADMIN_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: jenkins-admin-pw
+          key: password
+    - name: GITHUB_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: github-token
+          key: GITHUB_TOKEN
+    # [수정] 이름을 다르게 설정하여 Helm 차트의 기본값(디렉토리 경로)이 덮어쓰지 못하게 합니다.
+    - name: CUSTOM_CASC_CONFIG_FILE
+      value: "/var/jenkins_home/casc_configs/jenkins.yaml"
+
+  # 사이드카 설정
+  sidecars:
+    configAutoReload:
+      enabled: true
+      label: jenkins-jenkins-config
+      folder: /var/jenkins_home/casc_configs
+      # 사이드카 컨테이너에도 동일한 환경변수 이름을 명시해줍니다.
+      env:
+        - name: CASC_JENKINS_CONFIG
+          value: "/var/jenkins_home/casc_configs/jenkins.yaml"
+
+  javaOpts: "-Xmx1024m -Duser.timezone=Asia/Seoul"
+  
+  additionalVolumes: []
+  additionalVolumeMounts: []
